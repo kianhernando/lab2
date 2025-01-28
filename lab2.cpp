@@ -217,6 +217,10 @@ int X11_wrapper::check_keys(XEvent *e)
 	if (e->type != KeyPress && e->type != KeyRelease)
 		return 0;
 	int key = XLookupKeysym(&e->xkey, 0);
+
+	// Counter to check speed (WORK LATER, MAKE THIS A GLOBAL???)
+	int speed = 0;
+
 	if (e->type == KeyPress) {
 		switch (key) {
 			case XK_a:
@@ -225,6 +229,18 @@ int X11_wrapper::check_keys(XEvent *e)
 			case XK_Escape:
 				//Escape key was pressed
 				return 1;
+			case XK_Up:
+				//Up accelerates velocity
+				speed += 1;
+				g.pos[0] += speed * g.dir;
+				cout << "The current speed is: " << speed << endl;
+				return 0;
+			case XK_Down:
+				//Up accelerates velocity
+				speed -= 1;
+				g.pos[0] += speed * g.dir;
+				cout << "The current speed is: " << speed << endl;
+				return 0;
 		}
 	}
 	return 0;
