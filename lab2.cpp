@@ -9,6 +9,14 @@
 //This program needs some refactoring.
 //We will do this in class together.
 //
+// UPDATE LOG:
+// [2025.01.29] - Added a speed incrementer
+//
+// TO-DO LIST:
+// -fix speed incrementer
+// -make a certain speed transition change the box's color
+// -
+//
 //
 #include <iostream>
 #include <cstdlib>
@@ -21,6 +29,7 @@ using namespace std;
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
+#include "fonts.h"
 
 //some structures
 
@@ -34,7 +43,7 @@ public:
 	    xres = 400;
 	    yres = 200;
 	    w = 20.0f;
-	    dir = 30.0f;
+	    dir = 0.0f;
 	    pos[0] = 0.0f+w;
         pos[1] = yres/2.0f;
     }
@@ -82,6 +91,7 @@ int main()
 		x11.swapBuffers();
 		usleep(200);
 	}
+	cleanup_fonts();
 	return 0;
 }
 
@@ -125,7 +135,7 @@ void X11_wrapper::set_title()
 {
 	//Set the window title bar.
 	XMapWindow(dpy, win);
-	XStoreName(dpy, win, "3350 Lab-1");
+	XStoreName(dpy, win, "CMPS 3350 - Lab 2 (ESC to exit)");
 }
 
 bool X11_wrapper::getXPending()
@@ -219,7 +229,7 @@ int X11_wrapper::check_keys(XEvent *e)
 	int key = XLookupKeysym(&e->xkey, 0);
 
 	// Counter to check speed (WORK LATER, MAKE THIS A GLOBAL???)
-	int speed = 0;
+	int speed = 1.0f;
 
 	if (e->type == KeyPress) {
 		switch (key) {
@@ -231,15 +241,13 @@ int X11_wrapper::check_keys(XEvent *e)
 				return 1;
 			case XK_Up:
 				//Up accelerates velocity
-				speed += 1;
-				g.pos[0] += speed * g.dir;
-				cout << "The current speed is: " << speed << endl;
+				g.dir += speed;
+				cout << "The current speed is: " << g.dir << endl;
 				return 0;
 			case XK_Down:
-				//Up accelerates velocity
-				speed -= 1;
-				g.pos[0] += speed * g.dir;
-				cout << "The current speed is: " << speed << endl;
+				//Down decelerates velocity
+				g.dir -= speed;
+				cout << "The current speed is: " << g.dir << endl;
 				return 0;
 		}
 	}
@@ -257,6 +265,10 @@ void init_opengl(void)
 	glOrtho(0, g.xres, 0, g.yres, -1, 1);
 	//Set the screen background color
 	glClearColor(0.1, 0.1, 0.1, 1.0);
+	
+	//Do this to allow fonts
+	glEnable(GL_TEXTURE_2D);
+	initialize_fonts();
 }
 
 void physics()
@@ -291,6 +303,17 @@ void render()
 		glVertex2f(g.w, -g.w);
 	glEnd();
 	glPopMatrix();
+
+	Rect r;
+
+	r.bot = g.yres - 20;
+	r.left = 10;
+	r.center = 0;
+	ggprint8b(&r, 16, 0x00ff0000, "CMPS3350 - Lab2");
+	ggprint8b(&r, 16, 0x00ffff00, "ESC to exit");
+	ggprint8b(&r, 16, 0x00ffff00, "UP ARROW - Speed up");
+	ggprint8b(&r, 16, 0x00ffff00, "DOWN ARROW - Speed down");
+
 }
 
 
