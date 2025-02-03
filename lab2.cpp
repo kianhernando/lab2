@@ -229,7 +229,7 @@ int X11_wrapper::check_keys(XEvent *e)
 	int key = XLookupKeysym(&e->xkey, 0);
 
 	// Counter to check speed (WORK LATER, MAKE THIS A GLOBAL???)
-	int speed = 1.0f;
+	float speed = 1.0f;
 
 	if (e->type == KeyPress) {
 		switch (key) {
@@ -241,12 +241,16 @@ int X11_wrapper::check_keys(XEvent *e)
 				return 1;
 			case XK_Up:
 				//Up accelerates velocity
-				g.dir += speed;
+				g.dir = abs(g.dir) + speed;
 				cout << "The current speed is: " << g.dir << endl;
 				return 0;
 			case XK_Down:
 				//Down decelerates velocity
-				g.dir -= speed;
+				if (abs(g.dir) > speed) {
+					g.dir = (abs(g.dir) - speed);
+				} else {
+					g.dir = 0;
+				}
 				cout << "The current speed is: " << g.dir << endl;
 				return 0;
 		}
@@ -283,7 +287,7 @@ void physics()
 	}
 	if (g.pos[0] <= g.w) {
 		g.pos[0] = g.w;
-		g.dir = -g.dir;
+		g.dir = abs(g.dir);
 		glClearColor ( 0.0, 0.0, 0.0, 0.0 );
 	}
 }
